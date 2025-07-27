@@ -1,0 +1,66 @@
+#include <LiquidCrystal_I2C.h>
+#include <Wire.h>
+//#include <LiquidCrystal.h>
+#include "DHT.h"
+
+
+#define DHTPIN 8     // Digital pin connected to the DHT sensor
+
+#define DHTTYPE DHT11   // DHT 11
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+DHT dht(DHTPIN, DHTTYPE);
+
+
+void setup() {
+  Serial.begin(9600);
+  Serial.println(F("DHTxx test!"));
+  lcd.init();
+  lcd.backlight();
+  lcd.blink();
+  //lcd.begin(16, 2);
+  dht.begin();
+  //lcd.print("Test!!!!");
+}
+
+void loop() {
+  // Wait a few seconds between measurements.
+  delay(2000);
+  float h = dht.readHumidity();
+
+  float t = dht.readTemperature();
+
+  float f = dht.readTemperature(true);
+
+  // Check if any reads failed and exit early (to try again).
+  if (isnan(h) || isnan(t) || isnan(f)) {
+    Serial.println(F("Failed to read from DHT sensor!"));
+    return;
+  }
+
+  float hif = dht.computeHeatIndex(f, h);
+
+  float hic = dht.computeHeatIndex(t, h, false);
+
+  Serial.print(F(" Humidity: "));
+  Serial.print(h);
+  Serial.print(F("%  Temperature: "));
+  Serial.print(t);
+  Serial.print(F("C "));
+  Serial.print(f);
+  Serial.print(F("F  Heat index: "));
+  Serial.print(hic);
+  Serial.print(F("C "));
+  Serial.print(hif);
+  Serial.println(F("F"));
+
+  lcd.setCursor(0,0);
+  lcd.print(F("Humidity: "));
+  lcd.print(h);
+  lcd.print(F("%"));
+  lcd.setCursor(0,1);
+  lcd.print(F("Temp: "));
+  lcd.print(f);
+  lcd.print(F("F"));
+  
+
+}
